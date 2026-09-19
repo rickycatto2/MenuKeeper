@@ -1,5 +1,12 @@
 .env
+.env.*
+!.env.example
 data
 .git
 __pycache__
 .pytest_cache
+tests/fixtures/*
+backups
+data-recovery*
+*.key
+*.pem

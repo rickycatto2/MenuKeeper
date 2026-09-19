@@ -1,0 +1,13 @@
+name: Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build app and OCR runtime
+        run: docker build -t menukeeper-test .
+      - name: Test against isolated temporary data (no API key)
+        run: docker run --rm menukeeper-test python -m pytest -q

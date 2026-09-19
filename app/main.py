@@ -8,6 +8,7 @@ from urllib.parse import urlparse, urljoin
 from fastapi import FastAPI, HTTPException, UploadFile, File, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from PIL import Image, ImageOps
@@ -142,6 +143,7 @@ async def uploaded(file):
 def import_finish(text,source,extra_warnings=None,metadata=None,image_url=''):
     recipe,diag=normalize_recipe(text)
     recipe.import_warnings.extend(extra_warnings or [])
+    if len(text)>100000:recipe.import_warnings.append('Source exceeds the AI text limit; only the first 100,000 characters were normalized. Review the original.')
     if image_url:recipe.image=image_url
     if metadata:
         recipe.description=recipe.description or BeautifulText(metadata.get('description',''))
@@ -194,6 +196,9 @@ def import_text(body:ImportRequest):
 @app.post('/api/import/file',status_code=201)
 async def import_file(file:UploadFile=File(...)):
     path,source=await uploaded(file)
+    return await run_in_threadpool(import_saved_file,path,source)
+
+def import_saved_file(path,source):
     extra=[]
     try:
         if source['type']=='pdf':text,extra=extract_pdf(path)

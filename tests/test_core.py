@@ -24,6 +24,8 @@ def test_local_density_and_recipe_override():
     assert render(r,d)['ingredients'][0]['text']=='125 g / 1 cup flour'
     i.equivalent=Amount(quantity=140,unit='g')
     assert render(r,d,2)['ingredients'][0]['text']=='280 g / 2 cup flour'
+    r.steps=[Step(text='Use {{f}}',uses=[Usage(id='f',ingredient_id='flour',mode='amount',amount=Amount(quantity=70,unit='g'))])]
+    assert render(r,d,2,'us')['steps'][0]['text']=='Use 1 cup / 140 g flour'
 def test_ranges_and_fraction():
     a,tail=parse_amount('1 to 2 cups tomatoes')
     assert (a.quantity,a.maximum,a.unit,tail)==(1,2,'cup','tomatoes')
@@ -45,3 +47,7 @@ def test_local_groups_and_links():
 def test_ssrf_rejected():
     for url in ('http://127.0.0.1','http://169.254.169.254','file:///etc/passwd','http://localhost:5059'):
         with pytest.raises(ValueError):fetch_url(url)
+
+def test_unlinked_quantities_warn():
+    r=Recipe(title='Incomplete',steps=[Step(text='Add 2 tbsp butter.')])
+    assert any('Step 1 contains a quantity outside' in w for w in warnings(r))

@@ -75,6 +75,9 @@ def display(a, ingredient, dictionary, preference='metric', factor=1):
         eq=scaled(ingredient.equivalent,a.quantity/base.quantity)
         if a.maximum is not None:
             eq.maximum=ingredient.equivalent.quantity*a.maximum/base.quantity if ingredient.equivalent.quantity is not None else None
+    elif ingredient.equivalent and ingredient.equivalent.quantity and a.quantity is not None and unit(ingredient.equivalent.unit)==unit(a.unit):
+        eq=scaled(base,a.quantity/ingredient.equivalent.quantity)
+        if a.maximum is not None: eq.maximum=base.quantity*a.maximum/ingredient.equivalent.quantity if base.quantity is not None else None
     metric = unit(a.unit) in ('g','kg','ml','l')
     if eq is None: eq=convert(a,ingredient.name,dictionary,'us' if metric else 'metric')
     first, second = a,eq
@@ -108,6 +111,10 @@ def canonical(a):
     return dim, None if a.quantity is None else a.quantity*scale, None if a.quantity is None else (a.maximum if a.maximum is not None else a.quantity)*scale
 def warnings(recipe):
     result=list(recipe.import_warnings)
+    for n,step in enumerate(recipe.steps,1):
+        unlinked=re.sub(r'\{\{[^}]+\}\}','',step.text)
+        if re.search(NUM+r'\s*(?:cups?|tbsp|tsp|grams?|g|kg|ml|oz|cloves?|cans?)\b',unlinked,re.I):
+            result.append(f'Step {n} contains a quantity outside an ingredient reference. It may refer to an unlisted ingredient and will not scale until linked in the editor.')
     for i in recipe.ingredients:
         uses=[u for s in recipe.steps for u in s.uses if u.ingredient_id==i.id and u.mode!='mention']
         if not uses: result.append(f'{i.name} ({i.group}) is listed but has no measured step reference.')

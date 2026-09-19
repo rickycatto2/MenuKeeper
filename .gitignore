@@ -1,4 +1,8 @@
 .env
+.env.*
+!.env.example
+*.key
+*.pem
 data/
 __pycache__/
 .pytest_cache/
@@ -13,3 +17,5 @@ tests/fixtures/*
 *.db
 *.db-*
 *.sqlite*
+backups/
+data-recovery*/

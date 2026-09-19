@@ -5,8 +5,8 @@ import re
 class Amount(BaseModel):
     quantity: float | None = Field(default=None, ge=0, allow_inf_nan=False)
     maximum: float | None = Field(default=None, ge=0, allow_inf_nan=False)
-    unit: str = ''
-    text: str = ''
+    unit: str = Field(default='',description='Measurement unit only, e.g. cup, tbsp, tsp, g, ml, can. Do not use size adjectives like medium or whole.')
+    text: str = Field(default='',description='Only an unmeasured qualifier such as to taste, pinch, or as needed. Never repeat the numeric quantity or unit here.')
 
     @model_validator(mode='after')
     def check_range(self):
@@ -33,9 +33,9 @@ class Usage(BaseModel):
     alternative: str = ''
 
 class Step(BaseModel):
-    text: str
+    text: str = Field(description='Instruction template. Replace each ingredient name and its quantity by exactly one {{usage_id}} token. Example: Toss {{oil_use}} with {{potato_use}}. Do not leave ingredient names outside their tokens.')
     group: str = ''
-    uses: list[Usage] = Field(default_factory=list)
+    uses: list[Usage] = Field(default_factory=list,description='One record per {{usage_id}} token in text; its id must exactly match the token and ingredient_id must match a listed ingredient.')
 
 class Recipe(BaseModel):
     title: str = Field(min_length=1, max_length=300)
