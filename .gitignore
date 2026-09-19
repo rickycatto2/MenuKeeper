@@ -1,0 +1,15 @@
+.env
+data/
+__pycache__/
+.pytest_cache/
+*.pyc
+tests/fixtures/*
+!tests/fixtures/.gitkeep
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.db
+*.db-*
+*.sqlite*

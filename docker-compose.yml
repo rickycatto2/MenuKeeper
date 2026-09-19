@@ -1,0 +1,21 @@
+services:
+  recipes:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5059:5059"
+    env_file: .env
+    environment:
+      DATA_DIR: /data
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5059/api/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
